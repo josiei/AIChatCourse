@@ -24,7 +24,7 @@ struct OnboardingColorView: View {
             content: {
                 ZStack {
                     if let selectedColor {
-                        ctaButton
+                        ctaButton(selectedColor: selectedColor)
                         .transition(AnyTransition.move(edge: .bottom))
                     }
                 }
@@ -33,6 +33,7 @@ struct OnboardingColorView: View {
             }
         )
         .animation(.bouncy, value: selectedColor)
+        .toolbar(.hidden, for: .navigationBar)
     }
     
     private var colorGrid: some View {
@@ -62,9 +63,9 @@ struct OnboardingColorView: View {
             }
     }
     
-    private var ctaButton: some View {
+    private func ctaButton(selectedColor: Color) -> some View {
         NavigationLink {
-            OnboardingCompletedView()
+            OnboardingCompletedView(selectedColor: selectedColor)
         } label: {
             Text("Get Started")
                 .callToActionButton()
