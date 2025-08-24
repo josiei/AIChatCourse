@@ -58,7 +58,6 @@ struct ExploreView: View {
             .scrollIndicators(.hidden)
             .scrollTargetLayout()
             .scrollTargetBehavior(.viewAligned)
-            
             .removeListRowFormatting()
 
         } header: {
