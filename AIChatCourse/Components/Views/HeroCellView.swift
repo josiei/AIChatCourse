@@ -58,7 +58,7 @@ struct HeroCellView: View {
             HeroCellView(title: nil)
                 .frame(width: 300, height: 200)
             HeroCellView(subtitle: nil)
-                .frame(width:300, height: 200)
+                .frame(width: 300, height: 200)
         }
         .frame(maxWidth: .infinity)
     }
