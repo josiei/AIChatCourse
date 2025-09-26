@@ -7,44 +7,17 @@
 
 import SwiftUI
 
-extension Binding where Value == Bool {
-    init<T: Sendable>(ifNotNil value: Binding<T?>) {
-        self.init {
-            value.wrappedValue != nil
-        } set: { newValue in
-            if !newValue {
-                value.wrappedValue = nil
-            }
-        }
-    }
-}
 
-struct AnyAppAlert: Sendable {
-    var title: String
-    var subtitle: String?
-    var buttons: @Sendable () -> AnyView
-    
-    init(title: String, subtitle: String? = nil, buttons: (@Sendable () -> AnyView)? = nil) {
-        self.title = title
-        self.subtitle = subtitle
-        self.buttons = buttons ?? {
-            AnyView(
-                Button("OK", action: {
-                    
-                })
-            )
-        }
-    }
-}
+
 
 struct ChatView: View {
     @State private var chatMessages: [ChatMessageModel] = ChatMessageModel.mocks
     @State private var avatar: AvatarModel? = .mock
     @State private var currentUser: UserModel? = .mock
     @State private var textFieldText: String = ""
-    @State private var showChatSettings: Bool = false
     @State private var scrollPosition: String?
     @State private var showAlert: AnyAppAlert?
+    @State private var showChatSettings: AnyAppAlert?
     
     var body: some View {
         VStack(spacing: 0) {
@@ -63,21 +36,8 @@ struct ChatView: View {
                     }
             }
         }
-        .confirmationDialog("What would you like to do?", isPresented: $showChatSettings) {
-            Button("Report User / Chat", role: .destructive) {
-                
-            }
-            Button("Delete Chat", role: .destructive) {
-                
-            }
-        }
-        .alert(showAlert?.title ?? "", isPresented: Binding(ifNotNil: $showAlert)) {
-            showAlert?.buttons()
-        } message: {
-            if let subtitle = showAlert?.subtitle {
-                Text(subtitle)
-            }
-        }
+        .showCustomAlert(type: .confirmationDialog, alert: $showChatSettings)
+        .showCustomAlert(alert: $showAlert)
 
     }
     
@@ -157,12 +117,27 @@ struct ChatView: View {
             scrollPosition = message.id
             textFieldText = ""
         } catch let error {
-            showAlert = AnyAppAlert(title: error.localizedDescription)
+            showAlert = AnyAppAlert(error: error)
         }
     }
     
     private func onChatSettingsPressed() {
-        showChatSettings = true
+        showChatSettings = AnyAppAlert(
+            title: "",
+            subtitle: "What would you like to do?",
+            buttons: {
+                AnyView(
+                    Group {
+                        Button("Report User / Chat", role: .destructive) {
+                            
+                        }
+                        Button("Delete Chat", role: .destructive) {
+                            
+                        }
+                    }
+                )
+            }
+        )
     }
 }
 
