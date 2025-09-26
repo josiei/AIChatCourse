@@ -7,6 +7,36 @@
 
 import SwiftUI
 
+extension Binding where Value == Bool {
+    init<T: Sendable>(ifNotNil value: Binding<T?>) {
+        self.init {
+            value.wrappedValue != nil
+        } set: { newValue in
+            if !newValue {
+                value.wrappedValue = nil
+            }
+        }
+    }
+}
+
+struct AnyAppAlert: Sendable {
+    var title: String
+    var subtitle: String?
+    var buttons: @Sendable () -> AnyView
+    
+    init(title: String, subtitle: String? = nil, buttons: (@Sendable () -> AnyView)? = nil) {
+        self.title = title
+        self.subtitle = subtitle
+        self.buttons = buttons ?? {
+            AnyView(
+                Button("OK", action: {
+                    
+                })
+            )
+        }
+    }
+}
+
 struct ChatView: View {
     @State private var chatMessages: [ChatMessageModel] = ChatMessageModel.mocks
     @State private var avatar: AvatarModel? = .mock
@@ -14,6 +44,7 @@ struct ChatView: View {
     @State private var textFieldText: String = ""
     @State private var showChatSettings: Bool = false
     @State private var scrollPosition: String?
+    @State private var showAlert: AnyAppAlert?
     
     var body: some View {
         VStack(spacing: 0) {
@@ -40,6 +71,14 @@ struct ChatView: View {
                 
             }
         }
+        .alert(showAlert?.title ?? "", isPresented: Binding(ifNotNil: $showAlert)) {
+            showAlert?.buttons()
+        } message: {
+            if let subtitle = showAlert?.subtitle {
+                Text(subtitle)
+            }
+        }
+
     }
     
     private var textFieldSection: some View {
@@ -97,22 +136,29 @@ struct ChatView: View {
         .animation(.default, value: scrollPosition)
     }
     
+ 
     private func onSendMessagePressed() {
         guard let currentUser else { return }
         let content = textFieldText
         
-        let message = ChatMessageModel(
-            id: UUID().uuidString,
-            chatId: UUID().uuidString,
-            authorId: currentUser.userId,
-            content: content,
-            seenByIds: nil,
-            dateCreated: .now
-        )
-        
-        chatMessages.append(message)
-        scrollPosition = message.id
-        textFieldText = ""
+        do {
+            try TextValidationHelper.checkIfTextIsValid(text: content)
+            
+            let message = ChatMessageModel(
+                id: UUID().uuidString,
+                chatId: UUID().uuidString,
+                authorId: currentUser.userId,
+                content: content,
+                seenByIds: nil,
+                dateCreated: .now
+            )
+            
+            chatMessages.append(message)
+            scrollPosition = message.id
+            textFieldText = ""
+        } catch let error {
+            showAlert = AnyAppAlert(title: error.localizedDescription)
+        }
     }
     
     private func onChatSettingsPressed() {
