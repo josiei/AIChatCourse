@@ -11,6 +11,7 @@ import SDWebImageSwiftUI
 struct ImageLoaderView: View {
     var urlString: String = Constants.randomImage
     var resizingMode: ContentMode = .fill
+    var forceTransitionAnimation: Bool = false
     var body: some View {
         /// Rectangle with overlay prevents common bug, where image extends past frame
         Rectangle()
@@ -23,6 +24,10 @@ struct ImageLoaderView: View {
                     .allowsHitTesting(false) /// Any image extending past the frame will not be tappable
             }
             .clipped()
+            .ifSatisfiedCondition(forceTransitionAnimation) { content in
+                content
+                    .drawingGroup()
+            }
 
     }
 }
