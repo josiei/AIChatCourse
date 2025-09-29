@@ -4,7 +4,7 @@
 //
 //  Created by Jocelyn Icaza on 9/28/25.
 //
-
+import SwiftUI
 
 enum NavigationPathOption: Hashable {
     case chat(avatarId: String)
